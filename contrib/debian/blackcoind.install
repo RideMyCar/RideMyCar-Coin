@@ -1,0 +1,2 @@
+debian/bin/ridemycarcoind usr/bin
+src/ridemycarcoind usr/lib/ridemycarcoin

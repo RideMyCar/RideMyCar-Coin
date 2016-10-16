@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=RideMyCarCoin
+Comment=RideMyCarCoin P2P Cryptocurrency
+Comment[fr]=RideMyCarCoin, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=RideMyCarCoin, eşten eşe kriptografik sanal para birimi
+Exec=/usr/bin/ridemycarcoin-qt
+Terminal=false
+Type=Application
+Icon=/usr/share/pixmaps/bitcoin80.xpm
+MimeType=x-scheme-handler/ridemycarcoin;
+Categories=Office;

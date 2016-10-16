@@ -1,0 +1,5 @@
+ridemycarcoin-qt usr/bin
+share/pixmaps/bitcoin32.xpm usr/share/pixmaps
+share/pixmaps/bitcoin80.xpm usr/share/pixmaps
+debian/ridemycarcoin-qt.desktop usr/share/applications
+debian/ridemycarcoin-qt.protocol usr/share/kde4/services/
