@@ -1005,6 +1005,7 @@ int64_t GetPOSReward(int64_t nHeight, int64_t nFees, int64_t nCoinAge)
     	LogPrint("creation", "GetBlockValue() : create=%s nSubsidy=%d\n", FormatMoney(nSubsidy), nSubsidy);
 	return nSubsidy + nFees;
 }
+
 int64_t GetPOWReward(int64_t nHeight, int64_t nFees)
 {
     int64_t nSubsidy = 0 * COIN;
@@ -1989,7 +1990,7 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) c
     if (IsProofOfStake())
     {
         // Coinbase output should be empty if proof-of-stake block
-        if (vtx[0].vout.size() != 2 || !vtx[0].vout[0].IsEmpty())
+        if (vtx[0].vout.size() != 1 || !vtx[0].vout[0].IsEmpty())
             return DoS(100, error("CheckBlock() : coinbase output not empty for proof-of-stake block"));
 
         // Second transaction must be coinstake, the rest must not be
@@ -2314,8 +2315,10 @@ bool CBlock::SignBlock(CWallet& wallet, int64_t nFees)
 {
     // if we are trying to sign
     //    something except proof-of-stake block template
-    if (!vtx[0].vout[0].IsEmpty())
+    if (!vtx[0].vout[0].IsEmpty()) {
+	LogPrintf("SignBlock() : Vout[0] is not Empty \n");
         return false;
+    }
 
     // if we are trying to sign
     //    a complete proof-of-stake block
@@ -2330,11 +2333,14 @@ bool CBlock::SignBlock(CWallet& wallet, int64_t nFees)
 
     int64_t nSearchTime = txCoinStake.nTime; // search to current time
 
+    LogPrintf("Current Time: %d. Startup Time: %d", nSearchTime, nLastCoinStakeSearchTime);
     if (nSearchTime > nLastCoinStakeSearchTime)
     {
+	LogPrintf("SignBlock() : Found Compatible Timestamp \n");
         int64_t nSearchInterval = 1;
         if (wallet.CreateCoinStake(wallet, nBits, nSearchInterval, nFees, txCoinStake, key))
         {
+	    LogPrintf("SignBlock() : Created CoinStake From Wallet \n");
             if (txCoinStake.nTime >= pindexBest->GetPastTimeLimit()+1)
             {
                 // make sure coinstake would meet timestamp protocol

@@ -111,9 +111,9 @@ CBlock* CreateNewBlock(CReserveKey& reservekey, bool fProofOfStake, int64_t* pFe
     CTransaction txNew;
     txNew.vin.resize(1);
     txNew.vin[0].prevout.SetNull();
+    txNew.vout.resize(1);
 
     if (!fProofOfStake) {
-        txNew.vout.resize(1);
         CPubKey pubkey;
         if (!reservekey.GetReservedKey(pubkey))
             return NULL;
@@ -122,7 +122,6 @@ CBlock* CreateNewBlock(CReserveKey& reservekey, bool fProofOfStake, int64_t* pFe
       // Height first in coinbase required for block.version=2
       txNew.vin[0].scriptSig = (CScript() << nHeight) + COINBASE_FLAGS;
       assert(txNew.vin[0].scriptSig.size() <= 100);
-      txNew.vout.resize(2);
 
       txNew.vout[0].SetEmpty();
 
@@ -527,12 +526,14 @@ void ThreadStakeMiner(CWallet *pwallet)
     {
         while (pwallet->IsLocked())
         {
+	    LogPrintf("ThreadStakeMiner() : Wallet Locked \n");
             nLastCoinStakeSearchInterval = 0;
             MilliSleep(1000);
         }
 
         while (vNodes.empty() || IsInitialBlockDownload())
         {
+	    LogPrintf("ThreadStakeMiner() : No Connections or Block Download In Progress \n");
             nLastCoinStakeSearchInterval = 0;
             fTryToSync = true;
             MilliSleep(1000);
@@ -543,6 +544,7 @@ void ThreadStakeMiner(CWallet *pwallet)
             fTryToSync = false;
             if (vNodes.size() < 1)
             {
+		LogPrintf("ThreadStakeMiner() : No Connections \n");
                 MilliSleep(60000);
                 continue;
             }
@@ -551,20 +553,25 @@ void ThreadStakeMiner(CWallet *pwallet)
         //
         // Create new block
         //
+	LogPrintf("ThreadStakeMiner() : Creating Stake Block \n");
         int64_t nFees;
         auto_ptr<CBlock> pblock(CreateNewBlock(reservekey, true, &nFees));
-        if (!pblock.get())
+        if (!pblock.get()) {
+	    LogPrintf("ThreadStakeMiner() : Failed to Create New Block \n");
             return;
-
+	}
         // Trying to sign a block
         if (pblock->SignBlock(*pwallet, nFees))
         {
+	    LogPrintf("ThreadStakeMiner() : Signed Block \n");
             SetThreadPriority(THREAD_PRIORITY_NORMAL);
             CheckStake(pblock.get(), *pwallet);
             SetThreadPriority(THREAD_PRIORITY_LOWEST);
             MilliSleep(500);
         }
-        else
+        else {
+	    //LogPrintf("ThreadStakeMiner() : Failed to Sign Block \n");
             MilliSleep(nMinerSleep);
+	}
     }
 }

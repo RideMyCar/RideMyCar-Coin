@@ -366,20 +366,27 @@ bool CheckKernel(CBlockIndex* pindexPrev, unsigned int nBits, int64_t nTime, con
     CTxDB txdb("r");
     CTransaction txPrev;
     CTxIndex txindex;
-    if (!txPrev.ReadFromDisk(txdb, prevout, txindex))
+    if (!txPrev.ReadFromDisk(txdb, prevout, txindex)) {
+        LogPrintf("Could not read kernel prev from disk \n");
         return false;
+    }
 
     // Read block header
     CBlock block;
-    if (!block.ReadFromDisk(txindex.pos.nFile, txindex.pos.nBlockPos, false))
+    if (!block.ReadFromDisk(txindex.pos.nFile, txindex.pos.nBlockPos, false)) {
+        LogPrintf("Could not Read Block From Disk \n");
         return false;
+    }
 
     int nDepth;
-    if (IsConfirmedInNPrevBlocks(txindex, pindexPrev, nStakeMinConfirmations - 1, nDepth))
+    if (IsConfirmedInNPrevBlocks(txindex, pindexPrev, nStakeMinConfirmations - 1, nDepth)) {
+        LogPrintf("Stake Is not confirmed \n");
         return false;
+    }
 
     if (pBlockTime)
         *pBlockTime = block.GetBlockTime();
-
-    return CheckStakeKernelHash(pindexPrev, nBits, block, txindex.pos.nTxPos - txindex.pos.nBlockPos, txPrev, prevout, nTime, hashProofOfStake, targetProofOfStake);
+    bool result = CheckStakeKernelHash(pindexPrev, nBits, block, txindex.pos.nTxPos - txindex.pos.nBlockPos, txPrev, prevout, nTime, hashProofOfStake, targetProofOfStake);
+    LogPrintf("CheckKernel() : CheckStakeKernelHash Result: %d", result);
+    return result;
 }
