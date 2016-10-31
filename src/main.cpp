@@ -2316,7 +2316,6 @@ bool CBlock::SignBlock(CWallet& wallet, int64_t nFees)
     // if we are trying to sign
     //    something except proof-of-stake block template
     if (!vtx[0].vout[0].IsEmpty()) {
-	LogPrintf("SignBlock() : Vout[0] is not Empty \n");
         return false;
     }
 
@@ -2333,14 +2332,11 @@ bool CBlock::SignBlock(CWallet& wallet, int64_t nFees)
 
     int64_t nSearchTime = txCoinStake.nTime; // search to current time
 
-    LogPrintf("Current Time: %d. Startup Time: %d", nSearchTime, nLastCoinStakeSearchTime);
     if (nSearchTime > nLastCoinStakeSearchTime)
     {
-	LogPrintf("SignBlock() : Found Compatible Timestamp \n");
         int64_t nSearchInterval = 1;
         if (wallet.CreateCoinStake(wallet, nBits, nSearchInterval, nFees, txCoinStake, key))
         {
-	    LogPrintf("SignBlock() : Created CoinStake From Wallet \n");
             if (txCoinStake.nTime >= pindexBest->GetPastTimeLimit()+1)
             {
                 // make sure coinstake would meet timestamp protocol

@@ -526,14 +526,12 @@ void ThreadStakeMiner(CWallet *pwallet)
     {
         while (pwallet->IsLocked())
         {
-	    LogPrintf("ThreadStakeMiner() : Wallet Locked \n");
             nLastCoinStakeSearchInterval = 0;
             MilliSleep(1000);
         }
 
         while (vNodes.empty() || IsInitialBlockDownload())
         {
-	    LogPrintf("ThreadStakeMiner() : No Connections or Block Download In Progress \n");
             nLastCoinStakeSearchInterval = 0;
             fTryToSync = true;
             MilliSleep(1000);
@@ -544,7 +542,6 @@ void ThreadStakeMiner(CWallet *pwallet)
             fTryToSync = false;
             if (vNodes.size() < 1)
             {
-		LogPrintf("ThreadStakeMiner() : No Connections \n");
                 MilliSleep(60000);
                 continue;
             }
@@ -553,24 +550,20 @@ void ThreadStakeMiner(CWallet *pwallet)
         //
         // Create new block
         //
-	LogPrintf("ThreadStakeMiner() : Creating Stake Block \n");
         int64_t nFees;
         auto_ptr<CBlock> pblock(CreateNewBlock(reservekey, true, &nFees));
         if (!pblock.get()) {
-	    LogPrintf("ThreadStakeMiner() : Failed to Create New Block \n");
             return;
 	}
         // Trying to sign a block
         if (pblock->SignBlock(*pwallet, nFees))
         {
-	    LogPrintf("ThreadStakeMiner() : Signed Block \n");
             SetThreadPriority(THREAD_PRIORITY_NORMAL);
             CheckStake(pblock.get(), *pwallet);
             SetThreadPriority(THREAD_PRIORITY_LOWEST);
             MilliSleep(500);
         }
         else {
-	    //LogPrintf("ThreadStakeMiner() : Failed to Sign Block \n");
             MilliSleep(nMinerSleep);
 	}
     }

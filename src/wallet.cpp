@@ -1620,7 +1620,6 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     int64_t nBalance = GetBalance();
 
     if (nBalance <= nReserveBalance) {
-	LogPrintf("CreateCoinStake() : Wallet Balance < Reserve Balance \n");
         return false;
     }
 
@@ -1631,12 +1630,10 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
     // Select coins with suitable depth
     if (!SelectCoinsForStaking(nBalance - nReserveBalance, txNew.nTime, setCoins, nValueIn)) {
-	LogPrintf("CreateCoinStake() : Could not Find Coins with Suitable Depth \n");
        return false;
     }
 
     if (setCoins.empty()) {
-	LogPrintf("CreateCoinStake() : Input Selection Empty \n");
         return false;
     }
 
@@ -1654,10 +1651,8 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             // Search nSearchInterval seconds back up to nMaxStakeSearchInterval
             COutPoint prevoutStake = COutPoint(pcoin.first->GetHash(), pcoin.second);
             int64_t nBlockTime;
-            LogPrintf("CreateCoinStake() : Searching for Kernel \n");
             if (CheckKernel(pindexPrev, nBits, txNew.nTime - n, prevoutStake, &nBlockTime))
             {
-		LogPrintf("CreateCoinStake() : Kernel Found \n");
                 // Found a kernel
                 LogPrint("coinstake", "CreateCoinStake : kernel found\n");
                 vector<valtype> vSolutions;
@@ -1720,11 +1715,9 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     }
 
     if (nCredit == 0 || nCredit > nBalance - nReserveBalance) {
-	LogPrintf("coinstake", "CreateCoinStake : nCredit is 0 or nCredit is over Balance \n");
         return false;
     }
 
-    LogPrintf("CreateCoinStake() : Adding Inputs to Kernel \n");
     BOOST_FOREACH(PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setCoins)
     {
         // Attempt to add more inputs
@@ -1750,7 +1743,6 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
         }
     }
 
-    LogPrintf("CreateCoinStake() : Calculating Coin Age \n");
     // Calculate coin age reward
     {
         uint64_t nCoinAge;
@@ -1760,7 +1752,6 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
         int64_t nReward = GetPOSReward(pindexPrev->nHeight, nFees, nCoinAge);
         if (nReward <= 0) {
-	    LogPrintf("CreateCoinStake() : Reward is less than 0 \n");
             return false;
         }
         nCredit += nReward;
